@@ -32,7 +32,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send("API running");
 });
-//$ http://localhost:3000/api-docs/
+//? swagger_URL:  http://localhost:3000/api-docs/
 
 //! ====== Routes ======
 app.use("/api/auth", authRoute);
@@ -45,8 +45,8 @@ app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-/*  the body of the request in patch create new event
-
+/*
+$ the body of the request in patch create new event
 {
   "eventName": "Birthday Party",
   "eventDescription": "Cool party with friends",

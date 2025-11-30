@@ -24,88 +24,313 @@
         "properties": {
           "_id": {
             "type": "string",
-            "example": "665f1a..."
+            "example": "665f1a1234567890abcdef12"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
           },
           "email": {
             "type": "string",
-            "example": "test@example.com"
-          },
-          "role": {
-            "type": "string",
-            "example": "user"
-          }
-        }
-      },
-      "LoginRequest": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "test@example.com"
+            "example": "user@example.com"
           },
           "password": {
             "type": "string",
-            "example": "secret123"
-          }
-        },
-        "required": ["email", "password"]
-      }
-    }
-  },
-  "paths": {
-    "/api/me": {
-      "get": {
-        "summary": "Get current logged-in user",
-        "tags": ["Users"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Current user info",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
+            "example": "secret123",
+            "writeOnly": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "example": "user"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/avatar.jpg"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T12:30:00.000Z"
           }
         }
-      }
-    },
-    "/api/users": {
-      "get": {
-        "summary": "Get all users",
-        "tags": ["Users"],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of users",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "666f1a1234567890abcdef12"
+          },
+          "organizerId": {
+            "type": "string",
+            "description": "User ID of the organizer",
+            "example": "665f1a1234567890abcdef12"
+          },
+          "eventName": {
+            "type": "string",
+            "example": "Birthday Party"
+          },
+          "eventDescription": {
+            "type": "string",
+            "example": "Cool party with friends"
+          },
+          "occasionType": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private"
+            ],
+            "example": "private"
+          },
+          "eventDate": {
+            "type": "string",
+            "example": "2025-12-10"
+          },
+          "eventTime": {
+            "type": "string",
+            "example": "20:00"
+          },
+          "price": {
+            "type": "number",
+            "example": 500
+          },
+          "invitationLink": {
+            "type": "string",
+            "example": ""
+          },
+          "maxAttendance": {
+            "type": "integer",
+            "example": 50
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "engagement",
+              "graduation",
+              "familyEvent",
+              "photoSession",
+              "musicalParty",
+              "festival",
+              "conference",
+              "play",
+              "custom"
+            ],
+            "example": "custom"
+          },
+          "locationType": {
+            "type": "string",
+            "enum": [
+              "home",
+              "lounge",
+              "theatre"
+            ],
+            "example": "lounge"
+          },
+          "homeAddress": {
+            "type": "string",
+            "nullable": true,
+            "example": "Some Street 456"
+          },
+          "venue": {
+            "type": "object",
+            "nullable": true,
+            "description": "Used when locationType is not 'home'",
+            "properties": {
+              "image": {
+                "type": "string",
+                "example": "https://example.com/lounge.jpg"
+              },
+              "name": {
+                "type": "string",
+                "example": "Royal Lounge"
+              },
+              "address": {
+                "type": "string",
+                "example": "Main Street 123"
+              },
+              "cost": {
+                "type": "number",
+                "example": 1500
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "lounge",
+                  "theatre"
+                ],
+                "example": "lounge"
+              }
+            }
+          },
+          "services": {
+            "type": "object",
+            "properties": {
+              "hospitality": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "cost": {
+                    "type": "number",
+                    "example": 250
+                  },
+                  "drinks": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "food": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "cake": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "icecream": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              },
+              "camera": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "cost": {
+                    "type": "number",
+                    "example": 100
+                  }
+                }
+              },
+              "decoration": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "cost": {
+                    "type": "number",
+                    "example": 0
+                  }
+                }
+              },
+              "limousine": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "cost": {
+                    "type": "number",
+                    "example": 0
+                  }
+                }
+              },
+              "musicalBand": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "cost": {
+                    "type": "number",
+                    "example": 0
                   }
                 }
               }
             }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T12:30:00.000Z"
+          }
+        }
+      },
+      "RequestEvent": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "777f1a1234567890abcdef12"
+          },
+          "requestType": {
+            "type": "string",
+            "enum": [
+              "create",
+              "edit",
+              "cancel"
+            ],
+            "example": "create"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ],
+            "example": "pending"
+          },
+          "requestedBy": {
+            "type": "string",
+            "description": "User ID who made the request",
+            "example": "665f1a1234567890abcdef12"
+          },
+          "eventId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Existing Event ID (for edit/cancel)",
+            "example": "666f1a1234567890abcdef12"
+          },
+          "event": {
+            "$ref": "#/components/schemas/Event"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T12:05:00.000Z"
           }
         }
       }
-    },
+    }
+  },
+  "paths": {
     "/api/auth/login": {
       "post": {
         "summary": "Login a user",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -122,6 +347,394 @@
           },
           "401": {
             "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "summary": "Get current logged-in user",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/my-events": {
+      "get": {
+        "summary": "Get all my accepted events",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of accepted events for current user"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "post": {
+        "summary": "Create a new event request",
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRequestCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Event request created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all my event requests",
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of my event requests"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Edit an existing event request",
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRequestUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Event request updated"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request not found"
+          }
+        }
+      }
+    },
+    "/api/events/{requestId}": {
+      "delete": {
+        "summary": "Cancel an event request",
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the event request to cancel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request cancelled successfully"
+          },
+          "400": {
+            "description": "Bad request (only pending can be cancelled)"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request not found"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get event request details by ID",
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the event request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event request details"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request not found"
+          }
+        }
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "summary": "Get all users (admin only)",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden (not admin)"
+          }
+        }
+      }
+    },
+    "/api/admin/events": {
+      "get": {
+        "summary": "Get all accepted events (admin only)",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of events"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden (not admin)"
+          }
+        }
+      }
+    },
+    "/api/admin/requests": {
+      "get": {
+        "summary": "Get all event requests (admin only)",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of all event requests"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden (not admin)"
+          }
+        }
+      }
+    },
+    "/api/admin/requests/{id}/approve": {
+      "patch": {
+        "summary": "Approve an event request",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the request to approve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request approved"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden (not admin)"
+          },
+          "404": {
+            "description": "Request not found"
+          }
+        }
+      }
+    },
+    "/api/admin/requests/{id}/reject": {
+      "patch": {
+        "summary": "Reject an event request",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the request to reject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request rejected"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden (not admin)"
+          },
+          "404": {
+            "description": "Request not found"
           }
         }
       }

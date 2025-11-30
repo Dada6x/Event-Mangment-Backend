@@ -16,9 +16,9 @@ eventRoute.post("/", protect, addEventRequest);
 eventRoute.delete("/:requestId", protect, cancelEventRequestById);
 //! ====== Edit Request ======
 eventRoute.patch("/", protect, EditEventRequestById);
-//$ ====== Get Request DetailsBy ID ======
-eventRoute.get("/:id", protect, getEventRequestDetails);
 //$ ====== Get all My Requests ======
 eventRoute.get("/", protect, getMyEventRequests);
+//$ ====== Get Request DetailsBy ID ======
+eventRoute.get("/:id", protect, getEventRequestDetails);
 
 module.exports = eventRoute;
