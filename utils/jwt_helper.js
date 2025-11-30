@@ -11,7 +11,7 @@ function createToken(user) {
       role: user.role,
     },
     JWT_SECRET
-    // ❌ no expiresIn → token NEVER expires
+    
   );
 }
 

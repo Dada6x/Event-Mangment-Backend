@@ -1,7 +1,8 @@
 // controller/user_controller.js
 const User = require("../model/user_model");
+const Event = require("../model/event_model");
 
-//! /api/me
+//! ====== Me  ======
 exports.me = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -11,29 +12,21 @@ exports.me = async (req, res) => {
   }
 };
 
-//! /api/admin
-exports.admin = async (req, res) => {
+//! ====== Get all my Accepted Events  ======
+exports.getMyEvents = async (req, res) => {
   try {
-    res.json({ message: "Welcome admin", user: req.user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    const userId = req.user._id || req.user.id;
 
-//! /api/user
-exports.user = async (req, res) => {
-  try {
-    res.json({ message: "Hello user", user: req.user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    const events = await Event.find({ organizerId: userId }).sort({
+      eventDate: 1,
+      eventTime: 1,
+    });
 
-//! /api/users  (ADMIN ONLY) -> see all users from DB
-exports.getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find().select("-password");
-    res.json({ count: users.length, users });
+    res.status(200).json({
+      success: true,
+      count: events.length,
+      data: events,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

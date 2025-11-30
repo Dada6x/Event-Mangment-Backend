@@ -3,6 +3,7 @@ const User = require("../model/user_model");
 const bcrypt = require("bcryptjs");
 const { createToken } = require("../utils/jwt_helper");
 
+//! ====== Login  ======
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -25,7 +26,7 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar, // ✅ include avatar in login response too
+        avatar: user.avatar,
       },
       token,
     });
@@ -34,11 +35,9 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-//! SignUp request
+//! ====== Signup  ======
 exports.signup = async (req, res) => {
   try {
-    // ✅ include avatar here
     const { name, email, password, role, avatar } = req.body;
 
     if (!name || !email || !password) {
@@ -47,25 +46,25 @@ exports.signup = async (req, res) => {
         .json({ message: "name, email, password are required" });
     }
 
-    // 1) Check if email exists in DB
+    //@ 1) Check if email exists in DB
     const exists = await User.findOne({ email });
     if (exists) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // 2) Hash password
+    //@ 2) Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3) Create user (✅ now passing avatar)
+    //@ 3) Create user
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
       role: role || "user",
-      avatar: avatar || null, // optional: default to null if not provided
+      avatar: avatar || null,
     });
 
-    // 4) Create token
+    //@ 4) Create token
     const token = createToken(user);
 
     res.status(201).json({
@@ -75,7 +74,7 @@ exports.signup = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar, // ✅ return avatar
+        avatar: user.avatar,
       },
       token,
     });

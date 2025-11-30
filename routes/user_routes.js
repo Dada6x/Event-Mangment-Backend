@@ -2,19 +2,14 @@
 const express = require("express");
 const {
   me,
-  admin,
-  user,
-  getAllUsers,
-  getUsersForMessaging,
+  getMyEvents,
 } = require("../controller/user_controller");
-const { protect, authorize } = require("../middlewares/middlewares");
+const { protect, } = require("../middlewares/middlewares");
 
 const userRoute = express.Router();
 
 userRoute.get("/me", protect, me);
-userRoute.get("/admin", protect, authorize("admin"), admin);
-userRoute.get("/user", protect, user);
-// ! get all users
-userRoute.get("/users", protect, getAllUsers);
+userRoute.get("/my_events", protect, getMyEvents);
+
 
 module.exports = userRoute;
