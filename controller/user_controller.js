@@ -11,7 +11,6 @@ exports.me = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 //$ ====== Get all my Accepted Events  ======
 exports.getMyEvents = async (req, res) => {
   try {

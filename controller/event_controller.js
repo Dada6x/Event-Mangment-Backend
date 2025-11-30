@@ -2,7 +2,7 @@
 const Event = require("../model/event_model");
 const RequestEvent = require("../model/request_model");
 
-//! ====== ADD New Request   ======
+//$ ====== ADD New Request   ======
 exports.addEventRequest = async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -151,16 +151,15 @@ exports.EditEventRequestById = async (req, res, next) => {
     next(err);
   }
 };
-//! ====== cancel My Request By ID  ======
+//$====== cancel My Request By ID  ======
 exports.cancelEventRequestById = async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
 
-    // support both { requestId } and legacy { eventId }
-    const { requestId, eventId } = req.body;
-    const id = requestId || eventId;
+    // requestId now comes from URL params
+    const { requestId } = req.params;
 
-    if (!id) {
+    if (!requestId) {
       return res.status(400).json({
         success: false,
         message: "requestId is required to cancel a request",
@@ -169,7 +168,7 @@ exports.cancelEventRequestById = async (req, res, next) => {
 
     // Find the request that belongs to this user
     const request = await RequestEvent.findOne({
-      _id: id,
+      _id: requestId,
       requestedBy: userId,
     });
 
@@ -187,7 +186,7 @@ exports.cancelEventRequestById = async (req, res, next) => {
       });
     }
 
-    await RequestEvent.findByIdAndDelete(id);
+    await RequestEvent.findByIdAndDelete(requestId);
 
     return res.status(200).json({
       success: true,
@@ -197,7 +196,7 @@ exports.cancelEventRequestById = async (req, res, next) => {
     next(err);
   }
 };
-//! ====== Get My request Details By ID  ======
+//$ ====== Get My request Details By ID  ======
 exports.getEventRequestDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -226,7 +225,7 @@ exports.getEventRequestDetails = async (req, res, next) => {
     next(err);
   }
 };
-//! ====== Get All My Events Requests (Requests Not Events )  ======
+//$ ====== Get All My Requests (Requests Not Events )  ======
 exports.getMyEventRequests = async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;

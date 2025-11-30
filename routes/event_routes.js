@@ -12,8 +12,8 @@ const { protect } = require("../middlewares/middlewares");
 const eventRoute = express.Router();
 //$ ====== Add new Request  ======
 eventRoute.post("/", protect, addEventRequest);
-//! ====== cancel Request ====== 
-eventRoute.delete("/", protect, cancelEventRequestById);
+//$ ====== cancel Request ======
+eventRoute.delete("/:requestId", protect, cancelEventRequestById);
 //! ====== Edit Request ======
 eventRoute.patch("/", protect, EditEventRequestById);
 //$ ====== Get Request DetailsBy ID ======
@@ -22,5 +22,3 @@ eventRoute.get("/:id", protect, getEventRequestDetails);
 eventRoute.get("/", protect, getMyEventRequests);
 
 module.exports = eventRoute;
-
-
