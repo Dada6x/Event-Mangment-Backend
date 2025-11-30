@@ -3,7 +3,7 @@ const User = require("../model/user_model");
 const bcrypt = require("bcryptjs");
 const { createToken } = require("../utils/jwt_helper");
 
-//! ====== Login  ======
+//$ ====== Login  ======
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -35,7 +35,7 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-//! ====== Signup  ======
+//$ ====== Signup  ======
 exports.signup = async (req, res) => {
   try {
     const { name, email, password, role, avatar } = req.body;

@@ -44,3 +44,56 @@ app.use("/api/admin", adminRoute); // getAllUsers,getAllEvents,getAllEventReques
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
+
+/*!SECTION
+
+{
+  "eventName": "Birthday Party",
+  "eventDescription": "Cool party with friends",
+  "occasionType": "private",
+  "eventDate": "2025-12-10",
+  "eventTime": "20:00",
+  "price": 500,
+  "invitationLink": "",
+  "maxAttendance": 50,
+  "eventType": "custom",
+  "locationType": "lounge",
+
+  "venue": {
+    "name": "Royal Lounge",
+    "type": "lounge",
+    "address": "Main Street 123",
+    "cost": 1500,
+    "image": "https://example.com/lounge.jpg"
+  },
+
+  "services": {
+    "hospitality": {
+      "enabled": true,
+      "cost": 250,
+      "drinks": true,
+      "food": true,
+      "cake": false,
+      "icecream": false
+    },
+    "camera": {
+      "enabled": true,
+      "cost": 100
+    },
+    "decoration": {
+      "enabled": false,
+      "cost": 0
+    },
+    "limousine": {
+      "enabled": false,
+      "cost": 0
+    },
+    "musicalBand": {
+      "enabled": false,
+      "cost": 0
+    }
+  }
+}
+
+
+*/

@@ -2,7 +2,7 @@ const User = require("../model/user_model");
 const Event = require("../model/event_model");
 const RequestEvent = require("../model/request_model");
 
-//! ====== get ALl users (Admin) ======
+//$ ====== get ALl users (Admin) ======
 exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await User.find().select("-password"); // don't expose passwords
@@ -15,7 +15,7 @@ exports.getAllUsers = async (req, res, next) => {
     next(err);
   }
 };
-//! ====== Get All Events (Admin) ======
+//$ ====== Get All Events (Admin) ======
 exports.getAllEvents = async (req, res, next) => {
   try {
     const events = await Event.find().populate("organizerId", "name email");
@@ -29,7 +29,7 @@ exports.getAllEvents = async (req, res, next) => {
     next(err);
   }
 };
-//! ====== Get All  Requests ======
+//$ ====== Get All  Requests ======
 exports.getAllEventRequests = async (req, res, next) => {
   try {
     const requests = await RequestEvent.find()
@@ -46,7 +46,7 @@ exports.getAllEventRequests = async (req, res, next) => {
     next(err);
   }
 };
-//! ====== Approve Event By ID ======
+//$ ====== Approve Event By ID ======
 exports.approveEventRequest = async (req, res, next) => {
   try {
     const { id } = req.params; // RequestEvent _id
@@ -70,7 +70,6 @@ exports.approveEventRequest = async (req, res, next) => {
 
     // ---------- CREATE ----------
     if (request.requestType === "create") {
-
       // convert snapshot to plain new event
       let eventData = request.event.toObject
         ? request.event.toObject()
@@ -88,7 +87,6 @@ exports.approveEventRequest = async (req, res, next) => {
 
     // ---------- EDIT ----------
     else if (request.requestType === "edit") {
-
       if (!request.eventId) {
         return res.status(400).json({
           success: false,
@@ -104,11 +102,10 @@ exports.approveEventRequest = async (req, res, next) => {
       delete updates.createdAt;
       delete updates.updatedAt;
 
-      resultEvent = await Event.findByIdAndUpdate(
-        request.eventId,
-        updates,
-        { new: true, runValidators: true }
-      );
+      resultEvent = await Event.findByIdAndUpdate(request.eventId, updates, {
+        new: true,
+        runValidators: true,
+      });
 
       if (!resultEvent) {
         return res.status(404).json({
@@ -123,7 +120,6 @@ exports.approveEventRequest = async (req, res, next) => {
 
     // ---------- CANCEL ----------
     else if (request.requestType === "cancel") {
-
       if (!request.eventId) {
         return res.status(400).json({
           success: false,
@@ -152,12 +148,11 @@ exports.approveEventRequest = async (req, res, next) => {
         event: resultEvent,
       },
     });
-
   } catch (err) {
     next(err);
   }
 };
-//! ====== Reject Event By ID ======
+//$ ====== Reject Event By ID ======
 exports.rejectEventRequest = async (req, res, next) => {
   try {
     const { id } = req.params;

@@ -7,9 +7,10 @@ const {
 const { protect, } = require("../middlewares/middlewares");
 
 const userRoute = express.Router();
-
+//$ ====== Get my details (Profile) ======
 userRoute.get("/me", protect, me);
-userRoute.get("/my_events", protect, getMyEvents);
+//$ ====== Get All My Events (accepted ones) ======
+userRoute.get("/my-events", protect, getMyEvents);
 
 
 module.exports = userRoute;

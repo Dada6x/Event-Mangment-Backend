@@ -11,16 +11,17 @@ const { protect, authorize } = require("../middlewares/middlewares"); // you add
 
 const adminRoute = express.Router();
 //? ====== Only Admin is able to use this  ======
+
 adminRoute.use(protect, authorize("admin"));
-//! ====== Get all Users ======
+//$ ====== Get all Users ======
 adminRoute.get("/users", getAllUsers);
-//! ====== Get ALl Accepted Events ======
+//$ ====== Get ALl Accepted Events ======
 adminRoute.get("/events", getAllEvents);
-//! ====== Get All Requests  ======
+//$ ====== Get All Requests  ======
 adminRoute.get("/requests", getAllEventRequests);
-//! ====== Approve an Request ======
+//$ ====== Approve an Request ======
 adminRoute.patch("/requests/:id/approve", approveEventRequest);
-//! ====== Reject an Request ======
+//$ ====== Reject an Request ======
 adminRoute.patch("/requests/:id/reject", rejectEventRequest);
 
 module.exports = adminRoute;
