@@ -13,9 +13,9 @@ const eventRoute = express.Router();
 //$ ====== Add new Request  ======
 eventRoute.post("/", protect, addEventRequest);
 //! ====== cancel Request ====== 
-eventRoute.delete("/:id", protect, cancelEventRequestById);
+eventRoute.delete("/", protect, cancelEventRequestById);
 //! ====== Edit Request ======
-eventRoute.patch("/:id", protect, EditEventRequestById);
+eventRoute.patch("/", protect, EditEventRequestById);
 //$ ====== Get Request DetailsBy ID ======
 eventRoute.get("/:id", protect, getEventRequestDetails);
 //$ ====== Get all My Requests ======
@@ -23,4 +23,4 @@ eventRoute.get("/", protect, getMyEventRequests);
 
 module.exports = eventRoute;
 
-// reduce the number of IDs 
+

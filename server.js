@@ -35,17 +35,17 @@ app.get("/", (req, res) => {
 //$ http://localhost:3000/api-docs/
 
 //! ====== Routes ======
-app.use("/api/auth", authRoute); // signup- login
-app.use("/api", userRoute); // me - myEvents
-app.use("/api/events", eventRoute); // addEventRequest,EditEventRequest,cancelEventRequest,getEventRequestDetails,getMyEventRequests,
-app.use("/api/admin", adminRoute); // getAllUsers,getAllEvents,getAllEventRequests,approveEventRequest,rejectEventRequest,
+app.use("/api/auth", authRoute);
+app.use("/api", userRoute);
+app.use("/api/events", eventRoute);
+app.use("/api/admin", adminRoute);
 
 //! ====== Start server ======
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-/*!SECTION
+/*  the body of the request in patch create new event
 
 {
   "eventName": "Birthday Party",

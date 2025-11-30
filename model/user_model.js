@@ -24,7 +24,6 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    age: Number,
     avatar: {
       type: String, 
       default: null, 

@@ -7,9 +7,9 @@ const VenueSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     address: { type: String, required: true },
     cost: { type: Number, required: true },
-    type: { type: String, enum: ["lounge", "theatre"], required: true }
+    type: { type: String, enum: ["lounge", "theatre"], required: true },
   },
-  { _id: false } // IMPORTANT: avoids generating _id for subdocument
+  { _id: false }
 );
 
 const EventSchema = new mongoose.Schema(
@@ -78,7 +78,7 @@ const EventSchema = new mongoose.Schema(
     homeAddress: { type: String },
 
     //! Embedded venue data when NOT home
-    venue: VenueSchema,  // EMBEDDED — NO collection anymore
+    venue: VenueSchema, // EMBEDDED — NO collection anymore
 
     //! SERVICES
     services: {

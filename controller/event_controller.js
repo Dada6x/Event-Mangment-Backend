@@ -155,34 +155,43 @@ exports.EditEventRequestById = async (req, res, next) => {
 exports.cancelEventRequestById = async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
-    const { eventId } = req.body;
 
-    if (!eventId) {
+    // support both { requestId } and legacy { eventId }
+    const { requestId, eventId } = req.body;
+    const id = requestId || eventId;
+
+    if (!id) {
       return res.status(400).json({
         success: false,
-        message: "eventId is required for cancel request",
+        message: "requestId is required to cancel a request",
       });
     }
 
-    const existingEvent = await Event.findById(eventId);
-    if (!existingEvent) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found",
-      });
-    }
-
-    const request = await RequestEvent.create({
-      requestType: "cancel",
+    // Find the request that belongs to this user
+    const request = await RequestEvent.findOne({
+      _id: id,
       requestedBy: userId,
-      eventId,
-      event: existingEvent.toObject(), // includes embedded venue if present
     });
 
-    return res.status(201).json({
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    if (request.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: `Only pending requests can be cancelled (current status: ${request.status})`,
+      });
+    }
+
+    await RequestEvent.findByIdAndDelete(id);
+
+    return res.status(200).json({
       success: true,
-      message: "Event cancel request submitted",
-      data: request,
+      message: "Request cancelled successfully",
     });
   } catch (err) {
     next(err);

@@ -2,7 +2,7 @@
 const User = require("../model/user_model");
 const Event = require("../model/event_model");
 
-//! ====== Me  ======
+//$ ====== Me  ======
 exports.me = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -12,7 +12,7 @@ exports.me = async (req, res) => {
   }
 };
 
-//! ====== Get all my Accepted Events  ======
+//$ ====== Get all my Accepted Events  ======
 exports.getMyEvents = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
