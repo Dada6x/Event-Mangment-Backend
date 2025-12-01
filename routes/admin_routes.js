@@ -11,7 +11,6 @@ const { protect, authorize } = require("../middlewares/middlewares"); // you add
 
 const adminRoute = express.Router();
 //? ====== Only Admin is able to use this  ======
-
 adminRoute.use(protect, authorize("admin"));
 //$ ====== Get all Users ======
 adminRoute.get("/users", getAllUsers);

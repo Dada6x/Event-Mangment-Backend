@@ -27,7 +27,7 @@ mongoose
 app.get("/", (req, res) => {
   res.send("API running");
 });
-//! ====== Swagger ======
+//! ====== SwaggerUI ======
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send("API running");
@@ -35,10 +35,11 @@ app.get("/", (req, res) => {
 //? swagger_URL:  http://localhost:3000/api-docs/
 
 //! ====== Routes ======
-app.use("/api/auth", authRoute);
 app.use("/api", userRoute);
+app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/admin", adminRoute);
+app.use("/request",requestRoute)
 
 //! ====== Start server ======
 app.listen(3000, () => {
@@ -53,12 +54,12 @@ $ the body of the request in patch create new event
   "occasionType": "private",
   "eventDate": "2025-12-10",
   "eventTime": "20:00",
-  "price": 500,
-  "invitationLink": "",
+  !"price": 500,
+  !"invitationLink": "",
   "maxAttendance": 50,
   "eventType": "custom",
+  ?Edit this 
   "locationType": "lounge",
-
   "venue": {
     "name": "Royal Lounge",
     "type": "lounge",

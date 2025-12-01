@@ -7,16 +7,13 @@ const { createToken } = require("../utils/jwt_helper");
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    //! 1) Find user in DB
+//! 1) Find user in DB
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
-    //! 2) Compare password
+//! 2) Compare password
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ message: "Invalid credentials" });
-
-    //! 3) Create token
+ //! 3) Create token
     const token = createToken(user);
 
     res.json({
