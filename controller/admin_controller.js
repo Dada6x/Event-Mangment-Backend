@@ -79,9 +79,14 @@ exports.approveEventRequest = async (req, res, next) => {
       delete eventData.createdAt;
       delete eventData.updatedAt;
 
+      // 1) Create event
       resultEvent = await Event.create(eventData);
 
-      // delete request after success
+      // 2) Set invitationLink = event _id (for QR / invites)
+      resultEvent.invitationLink = resultEvent._id.toString();
+      await resultEvent.save();
+
+      // 3) delete request after success
       await RequestEvent.findByIdAndDelete(id);
     }
 
@@ -94,6 +99,15 @@ exports.approveEventRequest = async (req, res, next) => {
         });
       }
 
+      // Get existing event to preserve its invitationLink
+      const existingEvent = await Event.findById(request.eventId);
+      if (!existingEvent) {
+        return res.status(404).json({
+          success: false,
+          message: "Original event not found",
+        });
+      }
+
       let updates = request.event.toObject
         ? request.event.toObject()
         : request.event;
@@ -102,17 +116,13 @@ exports.approveEventRequest = async (req, res, next) => {
       delete updates.createdAt;
       delete updates.updatedAt;
 
+      // Keep the same invitationLink (don’t change the QR code)
+      updates.invitationLink = existingEvent.invitationLink;
+
       resultEvent = await Event.findByIdAndUpdate(request.eventId, updates, {
         new: true,
         runValidators: true,
       });
-
-      if (!resultEvent) {
-        return res.status(404).json({
-          success: false,
-          message: "Original event not found",
-        });
-      }
 
       // delete request after success
       await RequestEvent.findByIdAndDelete(id);
@@ -173,6 +183,7 @@ exports.rejectEventRequest = async (req, res, next) => {
     }
 
     request.status = "rejected";
+    await RequestEvent.findByIdAndDelete(id);
     await request.save();
 
     return res.status(200).json({
