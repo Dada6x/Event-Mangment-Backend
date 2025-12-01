@@ -3,11 +3,12 @@
   "info": {
     "title": "Event Management API",
     "version": "1.0.0",
-    "description": "API documentation for my Event Management backend"
+    "description": "API documentation for the Event Management backend"
   },
   "servers": [
     {
-      "url": "http://localhost:3000"
+      "url": "http://localhost:3000",
+      "description": "Local server"
     }
   ],
   "components": {
@@ -64,6 +65,56 @@
           }
         }
       },
+      "Venue": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "668f1a1234567890abcdef12"
+          },
+          "name": {
+            "type": "string",
+            "example": "Royal Lounge"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "lounge",
+              "theatre"
+            ],
+            "example": "lounge"
+          },
+          "address": {
+            "type": "string",
+            "example": "Main Street 123"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://example.com/lounge.jpg"
+          },
+          "baseCost": {
+            "type": "number",
+            "example": 1500
+          },
+          "maxCapacity": {
+            "type": "integer",
+            "nullable": true,
+            "example": 200
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "Event": {
         "type": "object",
         "properties": {
@@ -94,14 +145,17 @@
           },
           "eventDate": {
             "type": "string",
+            "description": "Event date (e.g. YYYY-MM-DD)",
             "example": "2025-12-10"
           },
           "eventTime": {
             "type": "string",
+            "description": "Event time (e.g. HH:mm)",
             "example": "20:00"
           },
           "price": {
             "type": "number",
+            "description": "Total price calculated on server",
             "example": 500
           },
           "invitationLink": {
@@ -143,121 +197,10 @@
             "example": "Some Street 456"
           },
           "venue": {
-            "type": "object",
-            "nullable": true,
-            "description": "Used when locationType is not 'home'",
-            "properties": {
-              "image": {
-                "type": "string",
-                "example": "https://example.com/lounge.jpg"
-              },
-              "name": {
-                "type": "string",
-                "example": "Royal Lounge"
-              },
-              "address": {
-                "type": "string",
-                "example": "Main Street 123"
-              },
-              "cost": {
-                "type": "number",
-                "example": 1500
-              },
-              "type": {
-                "type": "string",
-                "enum": [
-                  "lounge",
-                  "theatre"
-                ],
-                "example": "lounge"
-              }
-            }
+            "$ref": "#/components/schemas/EmbeddedVenue"
           },
           "services": {
-            "type": "object",
-            "properties": {
-              "hospitality": {
-                "type": "object",
-                "properties": {
-                  "enabled": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "cost": {
-                    "type": "number",
-                    "example": 250
-                  },
-                  "drinks": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "food": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "cake": {
-                    "type": "boolean",
-                    "example": false
-                  },
-                  "icecream": {
-                    "type": "boolean",
-                    "example": false
-                  }
-                }
-              },
-              "camera": {
-                "type": "object",
-                "properties": {
-                  "enabled": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "cost": {
-                    "type": "number",
-                    "example": 100
-                  }
-                }
-              },
-              "decoration": {
-                "type": "object",
-                "properties": {
-                  "enabled": {
-                    "type": "boolean",
-                    "example": false
-                  },
-                  "cost": {
-                    "type": "number",
-                    "example": 0
-                  }
-                }
-              },
-              "limousine": {
-                "type": "object",
-                "properties": {
-                  "enabled": {
-                    "type": "boolean",
-                    "example": false
-                  },
-                  "cost": {
-                    "type": "number",
-                    "example": 0
-                  }
-                }
-              },
-              "musicalBand": {
-                "type": "object",
-                "properties": {
-                  "enabled": {
-                    "type": "boolean",
-                    "example": false
-                  },
-                  "cost": {
-                    "type": "number",
-                    "example": 0
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/schemas/ServicesSelection"
           },
           "createdAt": {
             "type": "string",
@@ -343,10 +286,20 @@
         },
         "responses": {
           "200": {
-            "description": "Logged in successfully"
+            "description": "Logged in successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
           },
-          "401": {
+          "400": {
             "description": "Invalid credentials"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -369,10 +322,20 @@
         },
         "responses": {
           "201": {
-            "description": "User created successfully"
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Validation error"
+            "description": "Validation error or email already exists"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -394,13 +357,25 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Authenticated"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized (missing or invalid token)"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -418,10 +393,36 @@
         ],
         "responses": {
           "200": {
-            "description": "List of accepted events for current user"
+            "description": "List of accepted events for current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Event"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -449,13 +450,36 @@
         },
         "responses": {
           "201": {
-            "description": "Event request created"
+            "description": "Event creation request submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Event creation request submitted"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/RequestEvent"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation error"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       },
@@ -471,15 +495,41 @@
         ],
         "responses": {
           "200": {
-            "description": "List of my event requests"
+            "description": "List of my event requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 3
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RequestEvent"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       },
       "patch": {
-        "summary": "Edit an existing event request",
+        "summary": "Submit an edit request for an existing event",
         "tags": [
           "Events"
         ],
@@ -499,8 +549,28 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Event request updated"
+          "201": {
+            "description": "Event edit request submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Event edit request submitted"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/RequestEvent"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation error"
@@ -509,12 +579,15 @@
             "description": "Unauthorized"
           },
           "404": {
-            "description": "Request not found"
+            "description": "Event not found"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
     },
-    "/api/events/{requestId}": {
+    "/api/events/{id}": {
       "delete": {
         "summary": "Cancel an event request",
         "tags": [
@@ -527,7 +600,7 @@
         ],
         "parameters": [
           {
-            "name": "requestId",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
@@ -538,16 +611,36 @@
         ],
         "responses": {
           "200": {
-            "description": "Request cancelled successfully"
+            "description": "Request cancelled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request cancelled successfully"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad request (only pending can be cancelled)"
+            "description": "Only pending requests can be cancelled"
           },
           "401": {
             "description": "Unauthorized"
           },
           "404": {
             "description": "Request not found"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       },
@@ -563,7 +656,7 @@
         ],
         "parameters": [
           {
-            "name": "requestId",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
@@ -574,13 +667,32 @@
         ],
         "responses": {
           "200": {
-            "description": "Event request details"
+            "description": "Event request details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/RequestEvent"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
           },
           "404": {
             "description": "Request not found"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -598,13 +710,39 @@
         ],
         "responses": {
           "200": {
-            "description": "List of users"
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
           },
           "403": {
             "description": "Forbidden (not admin)"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -622,13 +760,39 @@
         ],
         "responses": {
           "200": {
-            "description": "List of events"
+            "description": "List of events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Event"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
           },
           "403": {
             "description": "Forbidden (not admin)"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -646,13 +810,39 @@
         ],
         "responses": {
           "200": {
-            "description": "List of all event requests"
+            "description": "List of all event requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 8
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RequestEvent"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
           },
           "403": {
             "description": "Forbidden (not admin)"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -681,10 +871,35 @@
         ],
         "responses": {
           "200": {
-            "description": "Request approved"
+            "description": "Request approved and removed from queue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request approved and removed from queue"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "$ref": "#/components/schemas/Event"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad request"
+            "description": "Bad request or invalid request type"
           },
           "401": {
             "description": "Unauthorized"
@@ -694,6 +909,9 @@
           },
           "404": {
             "description": "Request not found"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -722,10 +940,30 @@
         ],
         "responses": {
           "200": {
-            "description": "Request rejected"
+            "description": "Request rejected successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request rejected successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/RequestEvent"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad request"
+            "description": "Bad request or non-pending request"
           },
           "401": {
             "description": "Unauthorized"
@@ -735,6 +973,107 @@
           },
           "404": {
             "description": "Request not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/services": {
+      "get": {
+        "summary": "Get all services (hospitality,Camera,MusicalBand....etc)",
+        "tags": [
+          "Services"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Services configuration loaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ServicesConfig"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/services/venues": {
+      "get": {
+        "summary": "Get all active venues ",
+        "tags": [
+          "Services"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "lounge",
+                "theatre"
+              ]
+            },
+            "description": "Filter by venue type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of active venues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Venue"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }

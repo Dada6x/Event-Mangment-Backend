@@ -1,6 +1,4 @@
-Server
-
-// server.js
+Server 
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -9,6 +7,7 @@ const authRoute = require("./routes/auth_routes");
 const userRoute = require("./routes/user_routes");
 const eventRoute = require("./routes/event_routes");
 const adminRoute = require("./routes/admin_routes");
+const servicesRoutes = require("./routes/services_routes");
 const app = express();
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
@@ -41,14 +40,14 @@ app.use("/api", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/admin", adminRoute);
-app.use("/request",requestRoute)
-
+app.use("/api/services", servicesRoutes);
 //! ====== Start server ======
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-routes 
+
+routes
 // routes/admin_routes.js
 const express = require("express");
 const {
@@ -62,7 +61,6 @@ const { protect, authorize } = require("../middlewares/middlewares"); // you add
 
 const adminRoute = express.Router();
 //? ====== Only Admin is able to use this  ======
-
 adminRoute.use(protect, authorize("admin"));
 //$ ====== Get all Users ======
 adminRoute.get("/users", getAllUsers);
@@ -76,6 +74,7 @@ adminRoute.patch("/requests/:id/approve", approveEventRequest);
 adminRoute.patch("/requests/:id/reject", rejectEventRequest);
 
 module.exports = adminRoute;
+
 const express = require("express");
 const { login, signup } = require("../controller/auth_controller");
 const authRoute = express.Router();
@@ -86,6 +85,7 @@ authRoute.post("/login", login);
 authRoute.post("/signup", signup);
 
 module.exports = authRoute;
+
 // routes/event_routes.js
 const express = require("express");
 const {
@@ -110,6 +110,41 @@ eventRoute.get("/", protect, getMyEventRequests);
 eventRoute.get("/:id", protect, getEventRequestDetails);
 
 module.exports = eventRoute;
+// routes/meta_routes.js
+const express = require("express");
+const Venue = require("../model/venue_model");
+const servicesConfig = require("../config/services_config");
+const { protect } = require("../middlewares/middlewares");
+
+const servicesRoute = express.Router();
+
+// Get all active venues (optional filter by type)
+servicesRoute.get("/locations", protect, async (req, res, next) => {
+  try {
+    const { type } = req.query; // ?type=lounge or ?type=theatre
+    const query = { isActive: true };
+    if (type) query.type = type;
+    const venues = await Venue.find(query).sort({ name: 1 });
+
+    res.status(200).json({
+      success: true,
+      data: venues,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Get all services configuration
+servicesRoute.get("/", protect, (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: servicesConfig,
+  });
+});
+
+module.exports = servicesRoute;
+
 // routes/user_routes.js
 const express = require("express");
 const {
@@ -126,7 +161,6 @@ userRoute.get("/my-events", protect, getMyEvents);
 
 
 module.exports = userRoute;
-
 
 Models
 // model/event_model.js
@@ -243,6 +277,7 @@ const EventSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Event", EventSchema);
+
 const mongoose = require("mongoose");
 const Event = require("./event_model");
 
@@ -311,7 +346,58 @@ const userSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("User", userSchema, "Users");
+// model/venue_model.js
+const mongoose = require("mongoose");
 
+const venueSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    type: { type: String, enum: ["lounge", "theatre"], required: true },
+    address: { type: String, required: true },
+    image: { type: String, default: "" },
+    baseCost: { type: Number, required: true },
+    maxCapacity: { type: Number },
+    isActive: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Venue", venueSchema);
+
+middlewares
+// middlewares/middlewares.js
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../utils/jwt_helper");
+
+function protect(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = auth.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+}
+
+function authorize(...roles) {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ message: "Access denied You are not an Admin :3 " });
+    }
+    next();
+  };
+}
+
+module.exports = { protect, authorize };
 
 Controllers
 const User = require("../model/user_model");
@@ -509,13 +595,13 @@ const { createToken } = require("../utils/jwt_helper");
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+//! 1) Find user in DB
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
+//! 2) Compare password
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ message: "Invalid credentials" });
-
+ //! 3) Create token
     const token = createToken(user);
 
     res.json({
@@ -585,29 +671,32 @@ exports.signup = async (req, res) => {
 // controller/event_controller.js
 const Event = require("../model/event_model");
 const RequestEvent = require("../model/request_model");
+const Venue = require("../model/venue_model");
+const servicesConfig = require("../config/services_config");
 
 //$ ====== ADD New Request   ======
+
 exports.addEventRequest = async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
-
     let {
       eventName,
       eventDescription,
       occasionType,
       eventDate,
       eventTime,
-      price,
-      invitationLink,
       maxAttendance,
       eventType,
       locationType,
       homeAddress,
-      venue,
+      venueId,   // <-- now we expect this
       services,
     } = req.body;
 
-    // basic validation for location
+    let venueSnapshot = undefined;
+    let totalPrice = 0;
+
+    // ---- LOCATION VALIDATION + VENUE LOOKUP ----
     if (locationType === "home") {
       if (!homeAddress) {
         return res.status(400).json({
@@ -615,20 +704,95 @@ exports.addEventRequest = async (req, res, next) => {
           message: "homeAddress is required when locationType is 'home'",
         });
       }
-      // no venue needed
-      venue = undefined;
+      // maybe home has some base cost? up to you
     } else {
-      // lounge/theatre
-      if (!venue) {
+      if (!venueId) {
         return res.status(400).json({
           success: false,
-          message:
-            "venue object is required when locationType is 'lounge' or 'theatre'",
+          message: "venueId is required when locationType is 'lounge' or 'theatre'",
         });
       }
+
+      const venue = await Venue.findOne({ _id: venueId, isActive: true });
+      if (!venue) {
+        return res.status(404).json({
+          success: false,
+          message: "Venue not found or inactive",
+        });
+      }
+
+      // snapshot of venue into the Event
+      venueSnapshot = {
+        name: venue.name,
+        type: venue.type,
+        address: venue.address,
+        cost: venue.baseCost,
+        image: venue.image,
+      };
+
+      totalPrice += venue.baseCost;
     }
 
-    // base event data
+    // ---- SERVICES PRICING ----
+    const selectedServices = services || {};
+    const servicesSnapshot = {
+      hospitality: {
+        enabled: false,
+        cost: 0,
+        drinks: false,
+        food: false,
+        cake: false,
+        icecream: false,
+      },
+      camera: { enabled: false, cost: 0 },
+      decoration: { enabled: false, cost: 0 },
+      limousine: { enabled: false, cost: 0 },
+      musicalBand: { enabled: false, cost: 0 },
+    };
+
+    // hospitality
+    if (selectedServices.hospitality?.enabled) {
+      const config = servicesConfig.hospitality;
+      let cost = config.baseCost;
+
+      if (selectedServices.hospitality.drinks) {
+        cost += config.options.drinks.extraCost;
+      }
+      if (selectedServices.hospitality.food) {
+        cost += config.options.food.extraCost;
+      }
+      if (selectedServices.hospitality.cake) {
+        cost += config.options.cake.extraCost;
+      }
+      if (selectedServices.hospitality.icecream) {
+        cost += config.options.icecream.extraCost;
+      }
+
+      servicesSnapshot.hospitality = {
+        enabled: true,
+        cost,
+        drinks: !!selectedServices.hospitality.drinks,
+        food: !!selectedServices.hospitality.food,
+        cake: !!selectedServices.hospitality.cake,
+        icecream: !!selectedServices.hospitality.icecream,
+      };
+
+      totalPrice += cost;
+    }
+
+    // camera
+    if (selectedServices.camera?.enabled) {
+      const config = servicesConfig.camera;
+      servicesSnapshot.camera = {
+        enabled: true,
+        cost: config.baseCost,
+      };
+      totalPrice += config.baseCost;
+    }
+
+    // same pattern for decoration, limousine, musicalBand...
+
+    // ---- base event data (now price is calculated here) ----
     const eventData = {
       organizerId: userId,
       eventName,
@@ -636,17 +800,16 @@ exports.addEventRequest = async (req, res, next) => {
       occasionType,
       eventDate,
       eventTime,
-      price,
-      invitationLink,
+      price: totalPrice,        // <--- now server-side
+      invitationLink: "",       // or generate later
       maxAttendance,
       eventType,
       locationType,
       homeAddress,
-      venue, // embedded venue (or undefined if home)
-      services,
+      venue: venueSnapshot,
+      services: servicesSnapshot,
     };
 
-    // Create a request document instead of actual Event
     const request = await RequestEvent.create({
       requestType: "create",
       requestedBy: userId,
@@ -663,6 +826,7 @@ exports.addEventRequest = async (req, res, next) => {
     next(err);
   }
 };
+
 //! ====== Edit My Request By ID  ======
 exports.EditEventRequestById = async (req, res, next) => {
   try {
@@ -860,59 +1024,43 @@ exports.getMyEvents = async (req, res) => {
   }
 };
 
-
-middlewares
-// middlewares/middlewares.js
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../utils/jwt_helper");
-
-function protect(req, res, next) {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  const token = auth.split(" ")[1];
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-}
-
-function authorize(...roles) {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res
-        .status(403)
-        .json({ message: "Access denied You are not an Admin :3 " });
-    }
-    next();
-  };
-}
-
-module.exports = { protect, authorize };
-
-jwt helper
-// jwt/jwt_helper.js
-const jwt = require("jsonwebtoken");
-
-const JWT_SECRET = "my_super_secret_key";
-
-function createToken(user) {
-  return jwt.sign(
-    {
-      id: user._id,
-      email: user.email,
-      role: user.role,
+services_config
+// config/services_config.js
+module.exports = {
+  hospitality: {
+    key: "hospitality",
+    displayName: "Hospitality",
+    pricingType: "perEvent", // or "perGuest"
+    baseCost: 200,
+    options: {
+      drinks: { label: "Drinks", extraCost: 50 },
+      food: { label: "Food", extraCost: 100 },
+      cake: { label: "Cake", extraCost: 80 },
+      icecream: { label: "Ice Cream", extraCost: 40 },
     },
-    JWT_SECRET
-    
-  );
-}
-
-module.exports = { createToken, JWT_SECRET };
-
+  },
+  camera: {
+    key: "camera",
+    displayName: "Photography / Videography",
+    pricingType: "perEvent",
+    baseCost: 100,
+  },
+  decoration: {
+    key: "decoration",
+    displayName: "Decoration",
+    pricingType: "perEvent",
+    baseCost: 150,
+  },
+  limousine: {
+    key: "limousine",
+    displayName: "Limousine",
+    pricingType: "perEvent",
+    baseCost: 300,
+  },
+  musicalBand: {
+    key: "musicalBand",
+    displayName: "Musical Band",
+    pricingType: "perEvent",
+    baseCost: 400,
+  },
+};

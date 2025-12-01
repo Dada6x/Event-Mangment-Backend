@@ -7,6 +7,7 @@ const authRoute = require("./routes/auth_routes");
 const userRoute = require("./routes/user_routes");
 const eventRoute = require("./routes/event_routes");
 const adminRoute = require("./routes/admin_routes");
+const servicesRoutes = require("./routes/services_routes");
 const app = express();
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
@@ -39,8 +40,7 @@ app.use("/api", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/admin", adminRoute);
-app.use("/request",requestRoute)
-
+app.use("/api/services", servicesRoutes);
 //! ====== Start server ======
 app.listen(3000, () => {
   console.log("Server running on port 3000");
@@ -49,52 +49,37 @@ app.listen(3000, () => {
 /*
 $ the body of the request in patch create new event
 {
-  "eventName": "Birthday Party",
-  "eventDescription": "Cool party with friends",
+  "eventName": "Party in Lounge",
+  "eventDescription": "Lounge in the Royal  LOUNGEEE",
   "occasionType": "private",
   "eventDate": "2025-12-10",
   "eventTime": "20:00",
-  !"price": 500,
-  !"invitationLink": "",
   "maxAttendance": 50,
   "eventType": "custom",
-  ?Edit this 
   "locationType": "lounge",
-  "venue": {
-    "name": "Royal Lounge",
-    "type": "lounge",
-    "address": "Main Street 123",
-    "cost": 1500,
-    "image": "https://example.com/lounge.jpg"
-  },
+  "venueId":"692d541c55f354db0bec9f0a",
 
   "services": {
     "hospitality": {
       "enabled": true,
-      "cost": 250,
       "drinks": true,
       "food": true,
       "cake": false,
       "icecream": false
     },
     "camera": {
-      "enabled": true,
-      "cost": 100
+      "enabled": true
     },
     "decoration": {
-      "enabled": false,
-      "cost": 0
+      "enabled": true
     },
     "limousine": {
-      "enabled": false,
-      "cost": 0
+      "enabled": false
     },
     "musicalBand": {
-      "enabled": false,
-      "cost": 0
+      "enabled": false
     }
   }
 }
-
 
 */

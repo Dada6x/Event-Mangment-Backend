@@ -1,29 +1,32 @@
 // controller/event_controller.js
 const Event = require("../model/event_model");
 const RequestEvent = require("../model/request_model");
+const Venue = require("../model/venue_model");
+const servicesConfig = require("../config/services_config");
 
 //$ ====== ADD New Request   ======
+
 exports.addEventRequest = async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
-
     let {
       eventName,
       eventDescription,
       occasionType,
       eventDate,
       eventTime,
-      price,
-      invitationLink,
       maxAttendance,
       eventType,
       locationType,
       homeAddress,
-      venue,
+      venueId,   // <-- now we expect this
       services,
     } = req.body;
 
-    // basic validation for location
+    let venueSnapshot = undefined;
+    let totalPrice = 0;
+
+    // ---- LOCATION VALIDATION + VENUE LOOKUP ----
     if (locationType === "home") {
       if (!homeAddress) {
         return res.status(400).json({
@@ -31,20 +34,95 @@ exports.addEventRequest = async (req, res, next) => {
           message: "homeAddress is required when locationType is 'home'",
         });
       }
-      // no venue needed
-      venue = undefined;
+      // maybe home has some base cost? up to you
     } else {
-      // lounge/theatre
-      if (!venue) {
+      if (!venueId) {
         return res.status(400).json({
           success: false,
-          message:
-            "venue object is required when locationType is 'lounge' or 'theatre'",
+          message: "venueId is required when locationType is 'lounge' or 'theatre'",
         });
       }
+
+      const venue = await Venue.findOne({ _id: venueId, isActive: true });
+      if (!venue) {
+        return res.status(404).json({
+          success: false,
+          message: "Venue not found or inactive",
+        });
+      }
+
+      // snapshot of venue into the Event
+      venueSnapshot = {
+        name: venue.name,
+        type: venue.type,
+        address: venue.address,
+        cost: venue.baseCost,
+        image: venue.image,
+      };
+
+      totalPrice += venue.baseCost;
     }
 
-    // base event data
+    // ---- SERVICES PRICING ----
+    const selectedServices = services || {};
+    const servicesSnapshot = {
+      hospitality: {
+        enabled: false,
+        cost: 0,
+        drinks: false,
+        food: false,
+        cake: false,
+        icecream: false,
+      },
+      camera: { enabled: false, cost: 0 },
+      decoration: { enabled: false, cost: 0 },
+      limousine: { enabled: false, cost: 0 },
+      musicalBand: { enabled: false, cost: 0 },
+    };
+
+    // hospitality
+    if (selectedServices.hospitality?.enabled) {
+      const config = servicesConfig.hospitality;
+      let cost = config.baseCost;
+
+      if (selectedServices.hospitality.drinks) {
+        cost += config.options.drinks.extraCost;
+      }
+      if (selectedServices.hospitality.food) {
+        cost += config.options.food.extraCost;
+      }
+      if (selectedServices.hospitality.cake) {
+        cost += config.options.cake.extraCost;
+      }
+      if (selectedServices.hospitality.icecream) {
+        cost += config.options.icecream.extraCost;
+      }
+
+      servicesSnapshot.hospitality = {
+        enabled: true,
+        cost,
+        drinks: !!selectedServices.hospitality.drinks,
+        food: !!selectedServices.hospitality.food,
+        cake: !!selectedServices.hospitality.cake,
+        icecream: !!selectedServices.hospitality.icecream,
+      };
+
+      totalPrice += cost;
+    }
+
+    // camera
+    if (selectedServices.camera?.enabled) {
+      const config = servicesConfig.camera;
+      servicesSnapshot.camera = {
+        enabled: true,
+        cost: config.baseCost,
+      };
+      totalPrice += config.baseCost;
+    }
+
+    // same pattern for decoration, limousine, musicalBand...
+
+    // ---- base event data (now price is calculated here) ----
     const eventData = {
       organizerId: userId,
       eventName,
@@ -52,17 +130,16 @@ exports.addEventRequest = async (req, res, next) => {
       occasionType,
       eventDate,
       eventTime,
-      price,
-      invitationLink,
+      price: totalPrice,        // <--- now server-side
+      invitationLink: "",       // or generate later
       maxAttendance,
       eventType,
       locationType,
       homeAddress,
-      venue, // embedded venue (or undefined if home)
-      services,
+      venue: venueSnapshot,
+      services: servicesSnapshot,
     };
 
-    // Create a request document instead of actual Event
     const request = await RequestEvent.create({
       requestType: "create",
       requestedBy: userId,
@@ -79,6 +156,7 @@ exports.addEventRequest = async (req, res, next) => {
     next(err);
   }
 };
+
 //! ====== Edit My Request By ID  ======
 exports.EditEventRequestById = async (req, res, next) => {
   try {

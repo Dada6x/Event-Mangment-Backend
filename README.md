@@ -1,6 +1,8 @@
 
 ```
 backend
+├─ config
+│  └─ services_config.js
 ├─ controller
 │  ├─ admin_controller.js
 │  ├─ auth_controller.js
@@ -11,7 +13,8 @@ backend
 ├─ model
 │  ├─ event_model.js
 │  ├─ request_model.js
-│  └─ user_model.js
+│  ├─ user_model.js
+│  └─ venue_model.js
 ├─ package-lock.json
 ├─ package.json
 ├─ README.md
@@ -19,6 +22,7 @@ backend
 │  ├─ admin_routes.js
 │  ├─ auth_routes.js
 │  ├─ event_routes.js
+│  ├─ services_routes.js
 │  └─ user_routes.js
 ├─ server.js
 ├─ swagger.json
