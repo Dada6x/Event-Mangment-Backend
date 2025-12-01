@@ -5,7 +5,6 @@ const Venue = require("../model/venue_model");
 const servicesConfig = require("../config/services_config");
 
 //$ ====== ADD New Request   ======
-
 exports.addEventRequest = async (req, res, next) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -156,7 +155,6 @@ exports.addEventRequest = async (req, res, next) => {
     next(err);
   }
 };
-
 //! ====== Edit My Request By ID  ======
 exports.EditEventRequestById = async (req, res, next) => {
   try {

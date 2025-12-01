@@ -6,7 +6,7 @@ const { protect } = require("../middlewares/middlewares");
 
 const servicesRoute = express.Router();
 
-// Get all active venues (optional filter by type)
+//$ ====== Get all active venues  ======
 servicesRoute.get("/venues", protect, async (req, res, next) => {
   try {
     const { type } = req.query; // ?type=lounge or ?type=theatre
@@ -22,8 +22,7 @@ servicesRoute.get("/venues", protect, async (req, res, next) => {
     next(err);
   }
 });
-
-// Get all services configuration
+//$ ====== Get all Services ======
 servicesRoute.get("/", protect, (req, res) => {
   res.status(200).json({
     success: true,
