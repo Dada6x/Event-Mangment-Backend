@@ -3,8 +3,7 @@ const Venue = require("./model/venue_model");
 const User = require("./model/user_model");
 
 // Choose whichever connection you prefer:
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/Event_mangment";
+const MONGO_URI = "mongodb://127.0.0.1:27017/Event_mangment";
 
 async function seed() {
   try {
@@ -43,7 +42,8 @@ async function seed() {
       {
         name: "yahieaDada",
         email: "yahieadada@gmail.com",
-        password: "$2b$10$m7Z/Sa1jDjOcoKW8/92Z5Ob6pXFIXmJHHevvAuuuT70nNap46DS2C",
+        password:
+          "$2b$10$m7Z/Sa1jDjOcoKW8/92Z5Ob6pXFIXmJHHevvAuuuT70nNap46DS2C",
         role: "user",
         avatar: null,
         createdAt: new Date("2025-11-30T08:59:58.712Z"),
@@ -52,7 +52,8 @@ async function seed() {
       {
         name: "Admin",
         email: "yahieaadmin@gmail.com",
-        password: "$2b$10$II0tH9tq0IY6gwBY03XwDe5EsTq26PWOMvh5YsJQT.dIpcLllFe.C",
+        password:
+          "$2b$10$II0tH9tq0IY6gwBY03XwDe5EsTq26PWOMvh5YsJQT.dIpcLllFe.C",
         role: "admin",
         avatar: null,
         createdAt: new Date("2025-11-30T11:13:18.972Z"),

@@ -1,0 +1,76 @@
+require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+
+const app = express();
+app.use(cors("*"));
+app.use(express.json());
+
+const PORT = process.env.PORT || 3000;
+
+const VERIFF_BASE_URL = process.env.VERIFF_BASE_URL;
+const VERIFF_API_KEY = process.env.VERIFF_API_KEY;
+const VERIFF_MASTER_SECRET = process.env.VERIFF_MASTER_SECRET;
+
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'KYC backend running' });
+});
+
+// POST /veriff/session
+app.post('/veriff/session', async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    const body = {
+      verification: {
+        vendorData: userId,
+        // optional:
+        // callback: 'https://your-backend.com/veriff/webhook',
+      },
+    };
+
+    const url = `${VERIFF_BASE_URL}/v1/sessions`;
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-AUTH-CLIENT': VERIFF_API_KEY,
+      // Note: NO X-HMAC-SIGNATURE for /sessions in this simple example
+    };
+
+    console.log('🔵 Calling Veriff /v1/sessions with body:', body);
+
+    const response = await axios.post(url, body, { headers });
+
+    console.log('✅ Veriff response status:', response.status);
+    console.log('✅ Veriff response data:', response.data);
+
+    const data = response.data;
+    if (!data || data.status !== 'success' || !data.verification) {
+      return res.status(500).json({ error: 'Unexpected Veriff response', data });
+    }
+
+    const sessionUrl = data.verification.url;
+    const sessionId = data.verification.id;
+
+    return res.json({
+      sessionUrl,
+      sessionId,
+      veriffStatus: data.verification.status,
+    });
+  } catch (err) {
+    console.error('💥 Error calling Veriff:', err.response?.data || err.message);
+    return res.status(500).json({
+      error: 'Failed to create Veriff session',
+      details: err.response?.data || err.message,
+    });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ Server listening on http://localhost:${PORT}`);
+});
